@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:install_plugin/install_plugin.dart';
@@ -25,7 +26,14 @@ class UpdateApk {
   static String _flatform;
 
   /// 检查是否有更新
-  static checkUpdate({String url}) async {
+  ///
+  /// @params server 服务器地址
+  ///
+  /// @query query 服务器传参
+  static checkUpdate({
+    @required String server,
+    @required Map query,
+  }) async {
     /// 获取app版本
     _version = await _checkAppInfo();
 
@@ -33,9 +41,11 @@ class UpdateApk {
     _flatform = await getFlatForm();
 
     /// 获取服务器版本
-    Map _hotVersion = await _fetchVersionInfo(serverUrl: "", query: {});
+    Map _hotVersion = await _fetchVersionInfo(serverUrl: server, query: query);
 
     /// 对比本地与线上
+    ///
+    /// 为了方便在这里要求了一下格式，hotVersion返回要带有version字段，与服务器沟通这块仁者见仁智者见智，可自行实现
     if (_version == _hotVersion["version"]) {
       switch (_flatform) {
         case "andriod":
@@ -44,7 +54,8 @@ class UpdateApk {
           bool result = await _checkPermission();
           if (result) {
             /// 广播事件 andriod
-            eventBus.fire(new UpDateInfo(url: "更新url", flatform: "andriod"));
+            eventBus
+                .fire(new UpDateInfo(custom: _hotVersion, flatform: "andriod"));
           } else {
             /// 广播事件 ios
             eventBus.fire(new UpDateInfo(flatform: "ios"));
@@ -111,10 +122,16 @@ class UpdateApk {
   ///
   /// @return 当前服务器在线版本及详情
   ///
-  static Future _fetchVersionInfo(
+  static Future<Map> _fetchVersionInfo(
       {@required String serverUrl, Map query}) async {
     Response res = await Dio().post(serverUrl, data: query);
-    return res;
+
+    /// Json序列化
+    String dataStr = json.encode(res.data);
+
+    /// 返回Map
+    Map<String, dynamic> dataMap = json.decode(dataStr);
+    return dataMap;
   }
 
   /// 下载安卓更新包
