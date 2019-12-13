@@ -42,6 +42,10 @@ class UpDateInfo {
   UpDateInfo({this.details, this.url, this.force, @required this.flatform,this.custom});
 }
 
+/// 下载进度
+/// @return 0.0-1.0
+///
+/// 需要展示进度条时可以监听此类
 class UpdateAndroidProgressEvent {
   double progress;
   UpdateAndroidProgressEvent(this.progress);
