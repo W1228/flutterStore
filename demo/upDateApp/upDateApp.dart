@@ -24,6 +24,7 @@ import 'package:url_launcher/url_launcher.dart';
 class UpdateApk {
   static String _version;
   static String _flatform;
+  static File upFile;
 
   /// 检查是否有更新
   ///
@@ -145,12 +146,11 @@ class UpdateApk {
     /// 创建存储文件
     Directory storageDir = await getExternalStorageDirectory();
     String storagePath = storageDir.path;
-    print("====>本地版本$_version");
-    print("====>版本$version");
+    // print("====>本地版本$_version");
+    // print("====>线上版本$version");
 
-    /// 储存目录下寻找文件 `PorjectConfig`项目设置，自己配置
+    /// 储存目录下寻找文件。 `PorjectConfig`项目设置，自己配置
     File file = new File('$storagePath/${PorjectConfig.appName}v$version.apk');
-    print("文件是否存在====>${file.existsSync()}");
 
     /// 检查文件是否存在
     if (!file.existsSync()) {
@@ -160,7 +160,14 @@ class UpdateApk {
       // 存在则删除
       // file.deleteSync();
       // 也可以直接调用
-      installApk(apkFile: file, success: () {});
+      // 调用前先将文件保存一下
+      upFile = file;
+      installApk(
+          apkFile: file,
+          success: () {
+            // 安装成功后删除文件
+            file.deleteSync();
+          });
       return false;
     }
     try {
