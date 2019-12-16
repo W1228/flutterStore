@@ -46,16 +46,20 @@ class UpdateApk {
     /// 对比本地与线上
     ///
     /// 为了方便在这里要求了一下格式，hotVersion返回要带有version字段，与服务器沟通这块仁者见仁智者见智，可自行实现
-    if (_version == _hotVersion["version"]) {
+    if (_version != _hotVersion["version"]) {
       switch (_flatform) {
-        case "andriod":
+        case "android":
 
           /// 检查权限
           bool result = await _checkPermission();
           if (result) {
             /// 广播事件 andriod
-            eventBus
-                .fire(new UpDateInfo(custom: _hotVersion, flatform: "andriod"));
+            eventBus.fire(new UpDateInfo(
+                custom: _hotVersion,
+                url: _hotVersion["path"],
+                force: _hotVersion["force"],
+                flatform: "andriod",
+                version: _hotVersion["version"]));
           } else {
             /// 广播事件 ios
             eventBus.fire(new UpDateInfo(flatform: "ios"));
@@ -137,21 +141,31 @@ class UpdateApk {
   /// 下载安卓更新包
   ///
   /// @return File文件
-  static Future<File> downloadAndroid({String url}) async {
+  static Future downloadAndroid({String url, String version}) async {
     /// 创建存储文件
     Directory storageDir = await getExternalStorageDirectory();
     String storagePath = storageDir.path;
+    print("====>本地版本$_version");
+    print("====>版本$version");
 
     /// 储存目录下寻找文件 `PorjectConfig`项目设置，自己配置
-    File file = new File('$storagePath/${PorjectConfig.appName}v$_version.apk');
+    File file = new File('$storagePath/${PorjectConfig.appName}v$version.apk');
+    print("文件是否存在====>${file.existsSync()}");
 
     /// 检查文件是否存在
     if (!file.existsSync()) {
+      // 不存在则创建
       file.createSync();
+    } else {
+      // 存在则删除
+      // file.deleteSync();
+      // 也可以直接调用
+      installApk(apkFile: file, success: () {});
+      return false;
     }
     try {
       /// 发起下载请求
-      Response response = await Dio().get(url,
+      Response response = await Dio().get("${PorjectConfig.appUpdateUrl}$url",
           onReceiveProgress: showDownloadProgress,
           options: Options(
             responseType: ResponseType.bytes,

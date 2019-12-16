@@ -15,9 +15,9 @@ EventBus eventBus = EventBus();
 /// @ params force -[in] 是为否强制更新
 ///
 /// @ params flatform -[in] 运行环境
-/// 
-/// @ params custom -[in] 自定义对象  
-/// 
+///
+/// @ params custom -[in] 自定义对象
+///
 /// @ return UpDateInfo
 /// 监听:
 ///
@@ -36,16 +36,19 @@ EventBus eventBus = EventBus();
 class UpDateInfo {
   List<Map<String, String>> details;
   String url;
-  bool force;
+  int force;
   String flatform;
   Map custom;
-  UpDateInfo({this.details, this.url, this.force, @required this.flatform,this.custom});
+  String version;
+  UpDateInfo(
+      {this.details,
+      this.url,
+      this.force,
+      @required this.flatform,
+      this.custom,
+      this.version});
 }
 
-/// 下载进度
-/// @return 0.0-1.0
-///
-/// 需要展示进度条时可以监听此类
 class UpdateAndroidProgressEvent {
   double progress;
   UpdateAndroidProgressEvent(this.progress);
